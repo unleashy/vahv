@@ -1,0 +1,28 @@
+{
+  "name": "vahv",
+  "version": "0.1.0",
+  "license": "MIT",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "files": [
+    "./dist"
+  ],
+  "scripts": {
+    "build": "tsc -b src && tsc -b src/tsconfig-cjs.json",
+    "test": "jest",
+    "lint": "prettier --write . && eslint --ext .js,.ts src/ tests/",
+    "prepublishOnly": "yarn lint && yarn build"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.14",
+    "@typescript-eslint/eslint-plugin": "^4.3.0",
+    "@typescript-eslint/parser": "^4.3.0",
+    "eslint": "^7.10.0",
+    "eslint-config-prettier": "^6.12.0",
+    "eslint-plugin-jest": "^24.0.2",
+    "jest": "^26.4.2",
+    "prettier": "^2.1.2",
+    "ts-jest": "^26.4.1",
+    "typescript": "^4.0.3"
+  }
+}
