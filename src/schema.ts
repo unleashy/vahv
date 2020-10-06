@@ -14,9 +14,8 @@ type Message<Args extends any[]> =
   | ((value: string, ...args: Args) => string);
 
 type MessagesRecord<
-  Name extends string,
-  Args extends unknown[],
-  T extends Record<string, Validator<Name, Args>>
+  V extends Validator<string, unknown[]>,
+  T extends Record<string, V>
 > = {
   [P in keyof T]: Record<ValidatorName<T[P]>, Message<ValidatorArgs<T[P]>>>;
 };
@@ -32,18 +31,19 @@ type StringKeyof<T> = keyof T extends string ? keyof T : never;
 export function schema<
   Name extends string,
   Args extends unknown[],
-  Validators extends Record<string, Validator<Name, Args>>,
-  Messages extends MessagesRecord<Name, Args, Validators>
+  ValidatorT extends Validator<Name, Args>,
+  Schema extends Record<string, ValidatorT>,
+  Messages extends MessagesRecord<ValidatorT, Schema>
 >(
-  validators: keyof Validators extends keyof Messages ? Validators : never,
+  validators: keyof Schema extends keyof Messages ? Schema : never,
   messages: Messages
-): SchemaValidator<StringKeyof<Validators>> {
+): SchemaValidator<StringKeyof<Schema>> {
   return values => {
-    const errors: Errors<StringKeyof<Validators>> = {};
+    const errors: Errors<StringKeyof<Schema>> = {};
 
     for (const [key, validator] of Object.entries(validators) as [
-      StringKeyof<Validators>,
-      Validator<Name, Args>
+      StringKeyof<Schema>,
+      ValidatorT
     ][]) {
       const value = values[key] ?? "";
       const result = validator(value);
