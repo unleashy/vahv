@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - This CHANGELOG file.
 
+### Changed
+- `schema` now returns a `Promise`, resolving to a validation result.
+- Validator functions can now return a Promise resolving to a validation result.
+  These are async validators. 
+
 ## [0.1.0] - 2020-10-05
 
 ## Added

@@ -47,7 +47,7 @@ describe("and", () => {
     expect(() => and()).toThrowError(TypeError);
   });
 
-  it("can be used in a schema", () => {
+  it("can be used in a schema", async () => {
     const theSchema = schema(
       {
         a: composed
@@ -61,8 +61,8 @@ describe("and", () => {
       }
     );
 
-    expect(theSchema({ a: "" })).toEqual({ a: "v1" });
-    expect(theSchema({ a: "ab" })).toEqual({ a: "Value: ab Args: 1 2" });
+    expect(await theSchema({ a: "" })).toEqual({ a: "v1" });
+    expect(await theSchema({ a: "ab" })).toEqual({ a: "Value: ab Args: 1 2" });
   });
 });
 
@@ -71,7 +71,7 @@ function itWorksWithSchema<
   Args extends unknown[],
   V extends Validator<Name, Args>
 >(validator: V, name: Name, failingValue: string) {
-  it("can be used in a schema", () => {
+  it("can be used in a schema", async () => {
     const theSchema = schema(
       {
         a: validator
@@ -83,7 +83,7 @@ function itWorksWithSchema<
       }
     );
 
-    expect(theSchema({ a: failingValue })).toEqual({ a: "foobar" });
+    expect(await theSchema({ a: failingValue })).toEqual({ a: "foobar" });
   });
 }
 

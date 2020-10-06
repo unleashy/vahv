@@ -139,7 +139,6 @@ version:
 
 - Vahv **only deals with strings**. This is because all input values from forms
   are strings.
-- Vahv does not support asynchronous validators.
 - `undefined` is transformed to an empty string.
 
 ## API

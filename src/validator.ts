@@ -17,6 +17,10 @@ export type Validator<Name extends string, Args extends unknown[]> = (
   value: string
 ) => ValidatorResult<Name, Args>;
 
+export type AsyncValidator<Name extends string, Args extends unknown[]> = (
+  value: string
+) => Promise<ValidatorResult<Name, Args>>;
+
 export function and<
   Name extends string,
   Args extends unknown[],
