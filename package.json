@@ -1,7 +1,7 @@
 {
   "name": "vahv",
   "version": "0.1.0",
-  "license": "MIT",
+  "description": "Composable form validation library for TypeScript",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "sideEffects": false,
@@ -25,5 +25,12 @@
     "prettier": "^2.1.2",
     "ts-jest": "^26.4.1",
     "typescript": "^4.0.3"
-  }
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/unleashy/vahv.git"
+  },
+  "author": "Emmanuelle Fernandes",
+  "homepage": "https://github.com/unleashy/vahv"
 }
