@@ -66,11 +66,11 @@ describe("and", () => {
   });
 });
 
-function itWorksWithSchema<Name extends string, Args extends unknown[]>(
-  validator: Validator<Name, Args>,
-  name: Name,
-  failingValue: string
-) {
+function itWorksWithSchema<
+  Name extends string,
+  Args extends unknown[],
+  V extends Validator<Name, Args>
+>(validator: V, name: Name, failingValue: string) {
   it("can be used in a schema", () => {
     const theSchema = schema(
       {
@@ -79,7 +79,7 @@ function itWorksWithSchema<Name extends string, Args extends unknown[]>(
       {
         a: {
           [name]: "foobar"
-        } as Record<string, string>
+        }
       }
     );
 

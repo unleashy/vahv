@@ -1,23 +1,26 @@
 import type { Validator } from "./validator";
 
+type Message<Args extends unknown[]> =
+  | string
+  | ((value: string, ...args: Args) => string);
+
 type ValidatorName<T extends Validator<string, unknown[]>> = NonNullable<
   ReturnType<T>["name"]
 >;
 
-type ValidatorArgs<T extends Validator<string, unknown[]>> = NonNullable<
-  ReturnType<T>["args"]
->;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Message<Args extends any[]> =
-  | string
-  | ((value: string, ...args: Args) => string);
+type ValidatorArgsByName<T, N extends string> = T extends unknown
+  ? T extends Validator<N, infer Args>
+    ? Args
+    : never
+  : never;
 
 type MessagesRecord<
   V extends Validator<string, unknown[]>,
   T extends Record<string, V>
 > = {
-  [P in keyof T]: Record<ValidatorName<T[P]>, Message<ValidatorArgs<T[P]>>>;
+  [P in keyof T]: {
+    [N in ValidatorName<T[P]>]: Message<ValidatorArgsByName<T[P], N>>;
+  };
 };
 
 type Errors<Keys extends string> = Partial<Record<Keys, string>>;
