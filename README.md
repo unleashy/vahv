@@ -5,10 +5,10 @@ tree-shakeable and fully typed.
 
 ## Usage
 
-First, you’ll want to create a *validator* by using the `schema` function:
+First, you’ll want to create a _validator_ by using the `schema` function:
 
 ```ts
-import { schema, and, required, length, matches, email, minLength } from 'vahv';
+import { schema, and, required, length, matches, email, minLength } from "vahv";
 
 const validator = schema(
   {
@@ -19,7 +19,8 @@ const validator = schema(
   {
     username: {
       required: "Enter an username",
-      length: (_, min, max) => `Username must be between ${min} and ${max} characters`,
+      length: (_, min, max) =>
+        `Username must be between ${min} and ${max} characters`,
       matches: "Username must be in the correct format"
     },
     email: {
@@ -28,7 +29,8 @@ const validator = schema(
     },
     password: {
       required: "Enter a password",
-      minLength: (_, length) => `Password must have at least ${length} characters`
+      minLength: (_, length) =>
+        `Password must have at least ${length} characters`
     }
   }
 );
@@ -48,8 +50,12 @@ validator({ username: "ab", email: "name@example.com", password: "short" });
 // => { username: "Username must be between 3 and 32 characters",
 //      password: "Password must have at least 8 characters" }
 
-validator({ username: "spa ces", email: "name@example.com", password: "longenoughsurely" });
-// => {}  
+validator({
+  username: "spa ces",
+  email: "name@example.com",
+  password: "longenoughsurely"
+});
+// => {}
 ```
 
 When a key has been successfully validated, it doesn’t exist in the errors
@@ -59,7 +65,7 @@ Each key in a schema has one validator. A validator is a function that takes in
 a string, and returns a `ValidatorResult`, which can either be a success, with
 the `ok` function or a failure with the `err` function. Many validators—like
 Vahv’s built-in `length` validator—take arguments; they just return a validator
-bound to those arguments. 
+bound to those arguments.
 
 ### Composing
 
@@ -79,7 +85,7 @@ do this:
 export const username = and(length(3, 32), matches(/^[A-Z0-9_-]$/i));
 
 // ... wherever else ...
-import { username } from 'custom-validators.ts'; 
+import { username } from 'custom-validators.ts';
 
 ...
 
