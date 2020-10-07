@@ -6,18 +6,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2020-10-06
+
 ### Added
 - This CHANGELOG file.
+- `asyncAnd`, a validator that can receive sync and async validators alike.
+  Always returns an async validator.
 
 ### Changed
 - `schema` now returns a `Promise`, resolving to a validation result.
 - Validator functions can now return a Promise resolving to a validation result.
-  These are async validators. 
+  These are async validators. Note that `and` can only receive sync validators;
+  use `asyncAnd` to compose async validators.
 
 ## [0.1.0] - 2020-10-05
 
 ## Added
 - Vahv itself! This is its first release.
 
-[unreleased]: https://github.com/unleashy/vahv/compare/v0.1.0...HEAD
+[unreleased]: https://github.com/unleashy/vahv/compare/v0.2.0...HEAD
+[0.2.0]: https://www.npmjs.com/package/vahv/v/0.2.0
 [0.1.0]: https://www.npmjs.com/package/vahv/v/0.1.0
