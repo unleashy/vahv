@@ -36,21 +36,22 @@ const validator = schema(
 );
 ```
 
-You can then call the validator function with an object to validate it, which
-returns an errors object, with the same keys as your schema, with string values
-representing the error messages you defined in the second argument of `schema`:
+You can then `await` the validator function with an object to validate it,
+which returns an errors object, with the same keys as your schema, with string
+values representing the error messages you defined in the second argument of
+`schema`:
 
 ```ts
-validator({});
+await validator({});
 // => { username: "Enter an username",
 //      email: "Enter an email address, like name@example.com",
 //      password: "Enter a password" }
 
-validator({ username: "ab", email: "name@example.com", password: "short" });
+await validator({ username: "ab", email: "name@example.com", password: "short" });
 // => { username: "Username must be between 3 and 32 characters",
 //      password: "Password must have at least 8 characters" }
 
-validator({
+await validator({
   username: "spa ces",
   email: "name@example.com",
   password: "longenoughsurely"
@@ -67,12 +68,18 @@ the `ok` function or a failure with the `err` function. Many validators—like
 Vahv’s built-in `length` validator—take arguments; they just return a validator
 bound to those arguments.
 
+Validators can also be async—any validator that returns a Promise that wraps a
+ValidatorResult is an async validator. 
+
 ### Composing
 
 Of course, you don’t wanna limit yourself to one validator. Therefore, Vahv
 ships with a validator composer, `and`. Simply pass in as many validators as
 arguments as you want, and it’ll run each validator in sequence, and stop
 immediately as soon as a validation error is returned.
+
+Note that `and` is limited to synchronous validators. If you want to compose
+asynchronous validators, use `asyncAnd`.
 
 ### Reusing
 
