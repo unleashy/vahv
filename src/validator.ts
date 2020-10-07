@@ -40,6 +40,31 @@ export function and<
   };
 }
 
+type ToAsync<
+  V extends Validator<string, unknown[]> | AsyncValidator<string, unknown[]>
+> = V extends Validator<infer Name, infer Args>
+  ? AsyncValidator<Name, Args>
+  : V;
+
+export function asyncAnd<
+  Name extends string,
+  Args extends unknown[],
+  Validators extends (Validator<Name, Args> | AsyncValidator<Name, Args>)[]
+>(...validators: Validators): ToAsync<Validators[number]> {
+  if (validators.length === 0) {
+    throw new TypeError("At least one validator is required.");
+  }
+
+  return (async value => {
+    for (const validator of validators) {
+      const result = await validator(value);
+      if (!result.ok) return result;
+    }
+
+    return ok();
+  }) as ToAsync<Validators[number]>;
+}
+
 export const required: Validator<"required", []> = value =>
   value.length === 0 ? err("required", []) : ok();
 

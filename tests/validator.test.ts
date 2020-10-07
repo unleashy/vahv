@@ -1,5 +1,7 @@
 import {
   and,
+  asyncAnd,
+  AsyncValidator,
   email,
   err,
   length,
@@ -45,6 +47,44 @@ describe("and", () => {
 
   it("fails with no arguments", () => {
     expect(() => and()).toThrowError(TypeError);
+  });
+
+  it("can be used in a schema", async () => {
+    const theSchema = schema(
+      {
+        a: composed
+      },
+      {
+        a: {
+          v1: "v1",
+          v2: (value: string, ...args: number[]) =>
+            `Value: ${value} Args: ${args.join(" ")}`
+        }
+      }
+    );
+
+    expect(await theSchema({ a: "" })).toEqual({ a: "v1" });
+    expect(await theSchema({ a: "ab" })).toEqual({ a: "Value: ab Args: 1 2" });
+  });
+});
+
+describe("asyncAnd", () => {
+  const validator1: Validator<"v1", []> = value =>
+    value[0] === "a" ? ok() : err("v1", []);
+
+  const validator2: AsyncValidator<"v2", [number, number]> = async value =>
+    value.length === 1 ? ok() : err("v2", [1, 2]);
+
+  const composed = asyncAnd(validator1, validator2);
+
+  it("composes validators", async () => {
+    expect(await composed("")).toEqual(err("v1", []));
+    expect(await composed("ab")).toEqual(err("v2", [1, 2]));
+    expect(await composed("a")).toEqual(ok());
+  });
+
+  it("fails with no arguments", () => {
+    expect(() => asyncAnd()).toThrowError(TypeError);
   });
 
   it("can be used in a schema", async () => {
