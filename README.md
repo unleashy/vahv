@@ -5,17 +5,28 @@ tree-shakeable and fully typed.
 
 ## Usage
 
-First, you’ll want to create a _validator_ by using the `schema` function:
+First, you’ll want to create a schema by using the `schema` function:
 
 ```ts
-import { schema, and, required, length, matches, email, minLength } from "vahv";
+import {
+  schema,
+  and,
+  required,
+  length,
+  matches,
+  trim,
+  email,
+  minLength
+} from "vahv";
 
-const validator = schema(
+const formSchema = schema(
+  // Object schema
   {
-    username: and(required, length(3, 32), matches(/^[A-Z0-9_-]$/i)),
+    username: and(required, length(3, 32), matches(/^[A-Z0-9_-]+$/i), trim),
     email: and(required, email),
     password: and(required, minLength(8))
   },
+  // Error messages
   {
     username: {
       required: "Enter an username",
@@ -36,63 +47,74 @@ const validator = schema(
 );
 ```
 
-You can then `await` the validator function with an object to validate it,
-which returns an errors object, with the same keys as your schema, with string
-values representing the error messages you defined in the second argument of
-`schema`:
+You can then call the schema with an object to validate and transform it. It
+returns a `Promise` that either resolves with the same object you passed in
+plus transformations, or rejects with a `ValidationError` with the errors as
+per the second argument of `schema`:
 
 ```ts
-await validator({});
-// => { username: "Enter an username",
+await formSchema({});
+// => rejects: ValidationError {
+//      username: "Enter an username",
 //      email: "Enter an email address, like name@example.com",
-//      password: "Enter a password" }
+//      password: "Enter a password"
+//    }
 
-await validator({ username: "ab", email: "name@example.com", password: "short" });
-// => { username: "Username must be between 3 and 32 characters",
-//      password: "Password must have at least 8 characters" }
+await formSchema({ username: "ab", email: "name@example.com", password: "short" });
+// => rejects: ValidationError {
+//      username: "Username must be between 3 and 32 characters",
+//      password: "Password must have at least 8 characters"
+//    }
 
-await validator({
+await formSchema({
   username: "spa ces",
   email: "name@example.com",
   password: "longenoughsurely"
 });
-// => {}
+// => rejects: ValidationError {
+//      username: "Username must be in the correct format"
+//    }
+
+await formSchema({
+  username: "   niceperson123  ",
+  email: "name@example.com",
+  password: "  agoodpassword  "
+});
+// => resolves: {
+//      username: "niceperson123",
+//      email: "name@example.com",
+//      password: "  agoodpassword  "
+//    }
 ```
 
-When a key has been successfully validated, it doesn’t exist in the errors
-object.
+Each key in a schema has one parser. A parser validates and transforms its
+input string. The result of a parser is a `ParserResult`, that can be either a
+success with the transformed value through the `ok` function or a failure
+through the `err` function. Many parsers—like Vahv’s built-in `length` parser—
+take arguments; they just return a fresh parser bound to those arguments.
 
-Each key in a schema has one validator. A validator is a function that takes in
-a string, and returns a `ValidatorResult`, which can either be a success, with
-the `ok` function or a failure with the `err` function. Many validators—like
-Vahv’s built-in `length` validator—take arguments; they just return a validator
-bound to those arguments.
-
-Validators can also be async—any validator that returns a Promise that wraps a
-ValidatorResult is an async validator. 
+Parsers can also be async—any parser that returns a Promise that wraps a
+`ParserResult` is an async parser. 
 
 ### Composing
 
-Of course, you don’t wanna limit yourself to one validator. Therefore, Vahv
-ships with a validator composer, `and`. Simply pass in as many validators as
-arguments as you want, and it’ll run each validator in sequence, and stop
-immediately as soon as a validation error is returned.
-
-Note that `and` is limited to synchronous validators. If you want to compose
-asynchronous validators, use `asyncAnd`.
+Of course, you don’t want to limit yourself to just one parser. Therefore, Vahv
+ships with a parser composer, `and`. Simply pass in as many parsers as you want,
+and it’ll run each parser in sequence, and stop immediately as soon as a
+failure happens.
 
 ### Reusing
 
-Due to the compositional nature of Vahv, it’s really easy to reuse validators.
-For example, if you wanted to validate usernames accross your application, just
+Due to the compositional nature of Vahv, it’s really easy to reuse parsers.
+For example, if you wanted to validate usernames across your application, just
 do this:
 
 ```ts
-// custom-validators.ts
+// custom-parsers.ts
 export const username = and(length(3, 32), matches(/^[A-Z0-9_-]$/i));
 
 // ... wherever else ...
-import { username } from 'custom-validators.ts';
+import { username } from 'custom-parsers.ts';
 
 ...
 
@@ -108,7 +130,7 @@ use `and`: `and(required, username)` 😊
 
 ### Error messages
 
-Vahv intentionally separates error messages from validators. This makes it
+Vahv intentionally separates error messages from validation. This makes it
 easier to reuse error messages, and decouples i18n from validation. If you have
 a set of default messages, all you have to do is use what TypeScript already
 gives you:
@@ -141,8 +163,7 @@ out if a message is missing!
 
 ### Limitations
 
-Some of these limitations are intentional, but may be relaxed in a future
-version:
+These limitations are intentional and will most likely not change.
 
 - Vahv **only deals with strings**. This is because all input values from forms
   are strings.
