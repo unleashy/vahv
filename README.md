@@ -165,8 +165,9 @@ out if a message is missing!
 
 These limitations are intentional and will most likely not change.
 
-- Vahv **only deals with strings**. This is because all input values from forms
-  are strings.
+- Vahv only deals with strings as input, because all input values from forms
+  are strings. However, parsers may turn strings into other types; therefore,
+  the output object may contain any type as values.
 - `undefined` is transformed to an empty string.
 
 ## API
