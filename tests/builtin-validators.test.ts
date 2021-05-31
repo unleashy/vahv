@@ -1,5 +1,5 @@
-import { err, ok, Parser } from "../src/parsing";
-import { schema, ValidationError } from "../src/schema";
+import { itWorksWithSchema } from "./helpers";
+import { err, ok } from "../src/parsing";
 import {
   email,
   length,
@@ -8,34 +8,6 @@ import {
   minLength,
   required
 } from "../src/builtin-validators";
-
-function itWorksWithSchema<
-  Name extends string,
-  P extends Parser<string, unknown, Name, unknown[]>
->(parser: P, name: Name, successfulValue: string, failingValue: string) {
-  const theSchema = schema(
-    {
-      a: parser
-    },
-    {
-      a: {
-        [name]: "foobar"
-      }
-    }
-  );
-
-  it("succeeds within a schema", async () => {
-    await expect(theSchema({ a: successfulValue })).resolves.toEqual({
-      a: successfulValue
-    });
-  });
-
-  it("fails within a schema", async () => {
-    await expect(theSchema({ a: failingValue })).rejects.toThrow(
-      new ValidationError({ a: "foobar" })
-    );
-  });
-}
 
 describe("required", () => {
   it("passes for non-empty strings", () => {
