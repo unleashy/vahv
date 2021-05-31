@@ -158,8 +158,7 @@ schema({ ... }, defaultMessages);
 
 Since the error message dictionary is a simple object, you can use object
 spread to replace messages as needed with the above technique. Also note that
-you get full typing support in the error message dictionary, and it will error
-out if a message is missing!
+you get full typing support in the error message dictionary.
 
 ### Limitations
 
@@ -178,6 +177,12 @@ TODO
 
 Vahv uses Yarn for development. Use `yarn install` to install all dependencies,
 `yarn test` to run all tests, and `yarn lint` to prettify and lint the codebase.
+
+### Releasing
+
+1. Edit CHANGELOG.md to document each change appropriately
+2. Commit with message "Release vx.y.z"
+3. `yarn publish`
 
 ## License
 
