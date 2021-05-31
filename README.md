@@ -60,7 +60,11 @@ await formSchema({});
 //      password: "Enter a password"
 //    }
 
-await formSchema({ username: "ab", email: "name@example.com", password: "short" });
+await formSchema({
+  username: "ab",
+  email: "name@example.com",
+  password: "short"
+});
 // => rejects: ValidationError {
 //      username: "Username must be between 3 and 32 characters",
 //      password: "Password must have at least 8 characters"
@@ -94,7 +98,7 @@ through the `err` function. Many parsers—like Vahv’s built-in `length` parse
 take arguments; they just return a fresh parser bound to those arguments.
 
 Parsers can also be async—any parser that returns a Promise that wraps a
-`ParserResult` is an async parser. 
+`ParserResult` is an async parser.
 
 ### Composing
 
@@ -183,6 +187,8 @@ Vahv uses Yarn for development. Use `yarn install` to install all dependencies,
 1. Edit CHANGELOG.md to document each change appropriately
 2. Commit with message "Release vx.y.z"
 3. `yarn publish`
+4. Push commits: `git push`
+5. Push tag: `git push origin <vx.y.z>`
 
 ## License
 
