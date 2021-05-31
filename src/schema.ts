@@ -55,10 +55,7 @@ export function schema<
   ParserT extends Parser<never, Output, Name, Args>,
   Schema extends Record<string, ParserT>,
   Messages extends MessagesRecord<ParserT, Schema>
->(
-  parsers: keyof Schema extends keyof Messages ? Schema : never,
-  messages: Messages
-): SchemaParser<Schema> {
+>(parsers: Schema, messages: Messages): SchemaParser<Schema> {
   return async data => {
     const parserEntries = Object.entries(parsers);
     const promises = parserEntries.map(([key, parser]) => {

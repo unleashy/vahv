@@ -3,12 +3,14 @@ import { schema, ValidationError } from "../src/schema";
 
 // eslint-disable-next-line jest/no-export
 export function itWorksWithSchema<
+  Output,
+  SuccessOutput extends Output,
   Name extends string,
-  P extends Parser<string, unknown, Name, unknown[]>
+  P extends Parser<string, Output, Name, unknown[]>
 >(
   parser: P,
   name: Name,
-  successfulValue: string | { input: string; output: string },
+  successfulValue: string | { input: string; output: SuccessOutput },
   failingValue?: string
 ): void {
   const theSchema = schema(
@@ -29,9 +31,9 @@ export function itWorksWithSchema<
         : successfulValue.input;
 
     const output =
-      typeof successfulValue === "string"
-        ? successfulValue
-        : successfulValue.output;
+      typeof successfulValue === "object"
+        ? successfulValue.output
+        : successfulValue;
 
     await expect(theSchema({ a: input })).resolves.toEqual({
       a: output
