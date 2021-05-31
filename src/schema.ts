@@ -1,4 +1,4 @@
-import type { Err, Ok, Parser } from "./validator";
+import type { Err, Ok, Parser } from "./parsing";
 
 type Errors = Record<string, string>;
 

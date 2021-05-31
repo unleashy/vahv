@@ -42,18 +42,18 @@ export interface AsyncParser<
   (value: Input): Promise<ParserResult<Output, Name, Args>>;
 }
 
-type IsAssignable<A, B> = B extends A ? true : false;
-
 export type Parser<I, O, N extends string, A extends unknown[]> =
   | SyncParser<I, O, N, A>
   | AsyncParser<I, O, N, A>;
+
+type IsAssignable<A, B> = B extends A ? true : false;
 
 type IsCompatible<P1, P2> =
   // prettier-ignore
   P1 extends Parser<never, infer O, string, unknown[]>
     ? P2 extends Parser<infer I, unknown, string, unknown[]>
-      ? IsAssignable<I, O>
-      : false
+    ? IsAssignable<I, O>
+    : false
     : false;
 
 type CheckCompatibility<Ps extends unknown[]> =
@@ -61,8 +61,8 @@ type CheckCompatibility<Ps extends unknown[]> =
   Ps extends [infer P1, infer P2, ...infer Rest]
     ? [IsCompatible<P1, P2>, ...CheckCompatibility<[P2, ...Rest]>]
     : Ps["length"] extends 1
-      ? [true]
-      : [];
+    ? [true]
+    : [];
 
 type AreAllTrue<T extends unknown[]> = T[number] extends true ? true : false;
 
@@ -118,39 +118,3 @@ export function and<
     return ok(output);
   };
 }
-
-export const required: SyncParser<string, string, "required", []> = value =>
-  value.length === 0 ? err("required", []) : ok(value);
-
-export function minLength(
-  length: number
-): SyncParser<string, string, "minLength", [number]> {
-  return value =>
-    value.length < length ? err("minLength", [length]) : ok(value);
-}
-
-export function maxLength(
-  length: number
-): SyncParser<string, string, "maxLength", [number]> {
-  return value =>
-    value.length > length ? err("maxLength", [length]) : ok(value);
-}
-
-export function length(
-  min: number,
-  max: number
-): AsyncParser<string, string, "length", [number, number]> {
-  const composed = and(minLength(min), maxLength(max));
-  return async value =>
-    (await composed(value)).ok ? ok(value) : err("length", [min, max]);
-}
-
-export function matches(
-  pattern: RegExp
-): SyncParser<string, string, "matches", [RegExp]> {
-  return value => (pattern.test(value) ? ok(value) : err("matches", [pattern]));
-}
-
-const emailMatcher = matches(/^.+@.+\..+$/);
-export const email: SyncParser<string, string, "email", []> = value =>
-  emailMatcher(value).ok ? ok(value) : err("email", []);
