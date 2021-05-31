@@ -43,8 +43,8 @@ type Message<Args extends unknown[]> =
   | ((value: string, ...args: Args) => string);
 
 type MessagesRecord<P extends GenericParser, T extends Record<string, P>> = {
-  [K in keyof T]: {
-    [N in ParserName<T[K]>]: Message<ParserArgsByName<T[K], N>>;
+  [K in keyof T]?: {
+    [N in ParserName<T[K]>]?: Message<ParserArgsByName<T[K], N>>;
   };
 };
 
@@ -73,9 +73,15 @@ export function schema<
     ][];
     if (errors.length > 0) {
       const resolvedMessages = errors.map(([key, value, result]) => {
-        const message = (messages[key] as Record<Name, Message<Args>>)[
-          result.name
-        ];
+        const message = (
+          messages[key] as Record<Name, Message<Args>> | undefined
+        )?.[result.name];
+
+        if (message === undefined) {
+          throw new TypeError(
+            `a message for the "${result.name}" parser in the "${key}" key is not present`
+          );
+        }
 
         const finalMessage =
           typeof message === "string"

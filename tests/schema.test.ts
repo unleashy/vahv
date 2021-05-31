@@ -73,4 +73,29 @@ describe("schema", () => {
       })
     );
   });
+
+  it("fails if an error message is not present", async () => {
+    const parser1 = schema(
+      {
+        foo: () => ({ ok: false, name: "bar", args: [] })
+      },
+      {}
+    );
+
+    const parser2 = schema(
+      {
+        abc: () => ({ ok: false, name: "def", args: [] })
+      },
+      {
+        abc: {}
+      }
+    );
+
+    await expect(parser1({ foo: "" })).rejects.toThrow(
+      /a message for the "bar" parser in the "foo" key is not present/i
+    );
+    await expect(parser2({ abc: "" })).rejects.toThrow(
+      /a message for the "def" parser in the "abc" key is not present/i
+    );
+  });
 });
