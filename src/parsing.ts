@@ -82,39 +82,32 @@ type LastOutput<Ps> = Ps extends [...unknown[], infer L]
     : never
   : never;
 
-type NameOf<Ps> = Ps extends Parser<never, unknown, infer Name, unknown[]>
-  ? Name
-  : never;
-
-type ArgsOf<Ps> = Ps extends Parser<never, unknown, string, infer Args>
-  ? Args
-  : never;
+type AndParser<Ps, FirstInput, LastOutput> =
+  // prettier-ignore
+  Ps extends Parser<never, unknown, infer Name, infer Args>
+    ? AsyncParser<FirstInput, LastOutput, Name, Args>
+    : never;
 
 export function and<
   Parsers extends Parser<never, unknown, string, unknown[]>[]
 >(
   ...validators: CheckParsers<Parsers>
-): AsyncParser<
-  FirstInput<Parsers>,
-  LastOutput<Parsers>,
-  NameOf<Parsers[number]>,
-  ArgsOf<Parsers[number]>
-> {
+): AndParser<Parsers[number], FirstInput<Parsers>, LastOutput<Parsers>> {
   if (validators.length === 0) {
     throw new TypeError("At least one validator is required.");
   }
 
-  return async (value: FirstInput<Parsers>) => {
+  return (async value => {
     let output = value;
     for (const validator of validators) {
       const result = await validator(output);
       if (result.ok) {
         output = result.output as never;
       } else {
-        return result as Err<NameOf<Parsers[number]>, ArgsOf<Parsers[number]>>;
+        return result;
       }
     }
 
     return ok(output);
-  };
+  }) as AndParser<Parsers[number], FirstInput<Parsers>, LastOutput<Parsers>>;
 }

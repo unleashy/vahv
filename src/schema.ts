@@ -26,25 +26,21 @@ export type Infer<S> = S extends SchemaParser<infer Schema>
   ? SchemaResult<Schema>
   : never;
 
-type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
-
-type ParserName<T extends GenericParser> = NonNullable<
-  UnwrapPromise<ReturnType<T>>["name"]
->;
-
-type ParserArgsByName<T, N extends string> = T extends unknown
-  ? UnwrapPromise<T> extends Parser<never, unknown, N, infer Args>
-    ? Args
-    : never
+type ParserName<T> = T extends Parser<never, unknown, infer Name, unknown[]>
+  ? Name
   : never;
+
+type ParserArgsByName<P, Name extends string> =
+  // prettier-ignore
+  P extends Parser<never, unknown, Name, infer Args> ? Args : never;
 
 type Message<Args extends unknown[]> =
   | string
   | ((value: string, ...args: Args) => string);
 
-type MessagesRecord<P extends GenericParser, T extends Record<string, P>> = {
-  [K in keyof T]?: {
-    [N in ParserName<T[K]>]?: Message<ParserArgsByName<T[K], N>>;
+type Messages<Schema> = {
+  [K in keyof Schema]?: {
+    [N in ParserName<Schema[K]>]?: Message<ParserArgsByName<Schema[K], N>>;
   };
 };
 
@@ -54,8 +50,8 @@ export function schema<
   Args extends unknown[],
   ParserT extends Parser<never, Output, Name, Args>,
   Schema extends Record<string, ParserT>,
-  Messages extends MessagesRecord<ParserT, Schema>
->(parsers: Schema, messages: Messages): SchemaParser<Schema> {
+  Msgs extends Messages<Schema>
+>(parsers: Schema, messages: Msgs): SchemaParser<Schema> {
   return async data => {
     const parserEntries = Object.entries(parsers);
     const promises = parserEntries.map(([key, parser]) => {
