@@ -1,6 +1,6 @@
 {
   "name": "vahv",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Composable form validation library for TypeScript",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
