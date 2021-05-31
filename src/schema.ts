@@ -1,79 +1,98 @@
-import type { AsyncValidator, Validator } from "./validator";
+import type { Err, Ok, Parser } from "./validator";
+
+type Errors = Record<string, string>;
+
+export class ValidationError extends Error {
+  constructor(public readonly errors: Errors) {
+    super();
+  }
+}
+
+type GenericParser = Parser<never, unknown, string, unknown[]>;
+
+type OutputOf<P> = P extends Parser<never, infer Output, string, unknown[]>
+  ? Output
+  : never;
+
+type SchemaResult<Schema extends Record<string, GenericParser>> = {
+  [K in keyof Schema]: OutputOf<Schema[K]>;
+};
+
+interface SchemaParser<Schema extends Record<string, GenericParser>> {
+  (data: Record<string, string | undefined>): Promise<SchemaResult<Schema>>;
+}
+
+export type Infer<S> = S extends SchemaParser<infer Schema>
+  ? SchemaResult<Schema>
+  : never;
+
+type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
+
+type ParserName<T extends GenericParser> = NonNullable<
+  UnwrapPromise<ReturnType<T>>["name"]
+>;
+
+type ParserArgsByName<T, N extends string> = T extends unknown
+  ? UnwrapPromise<T> extends Parser<never, unknown, N, infer Args>
+    ? Args
+    : never
+  : never;
 
 type Message<Args extends unknown[]> =
   | string
   | ((value: string, ...args: Args) => string);
 
-type Unpromise<T> = T extends Promise<infer U> ? U : T;
-
-type ValidatorName<
-  T extends Validator<string, unknown[]> | AsyncValidator<string, unknown[]>
-> = NonNullable<Unpromise<ReturnType<T>>["name"]>;
-
-type ValidatorArgsByName<T, N extends string> = T extends unknown
-  ? Unpromise<T> extends Validator<N, infer Args>
-    ? Args
-    : never
-  : never;
-
-type MessagesRecord<
-  V extends Validator<string, unknown[]> | AsyncValidator<string, unknown[]>,
-  T extends Record<string, V>
-> = {
-  [P in keyof T]: {
-    [N in ValidatorName<T[P]>]: Message<ValidatorArgsByName<T[P], N>>;
+type MessagesRecord<P extends GenericParser, T extends Record<string, P>> = {
+  [K in keyof T]: {
+    [N in ParserName<T[K]>]: Message<ParserArgsByName<T[K], N>>;
   };
 };
 
-type Errors<Keys extends string> = Partial<Record<Keys, string>>;
-
-type SchemaValidator<ValidatorsKeys extends string> = (
-  values: Record<string, string | undefined>
-) => Promise<Errors<ValidatorsKeys>>;
-
-type StringKeyof<T> = keyof T extends string ? keyof T : never;
-
 export function schema<
+  Output,
   Name extends string,
   Args extends unknown[],
-  ValidatorT extends Validator<Name, Args> | AsyncValidator<Name, Args>,
-  Schema extends Record<string, ValidatorT>,
-  Messages extends MessagesRecord<ValidatorT, Schema>
+  ParserT extends Parser<never, Output, Name, Args>,
+  Schema extends Record<string, ParserT>,
+  Messages extends MessagesRecord<ParserT, Schema>
 >(
-  validators: keyof Schema extends keyof Messages ? Schema : never,
+  parsers: keyof Schema extends keyof Messages ? Schema : never,
   messages: Messages
-): SchemaValidator<StringKeyof<Schema>> {
-  return async values => {
-    const allValidators = Object.entries(validators) as [
-      StringKeyof<Schema>,
-      ValidatorT
-    ][];
-
-    const results = await Promise.all(
-      allValidators.map(([key, validator]) => validator(values[key] ?? ""))
-    );
-
-    const errors: Errors<StringKeyof<Schema>> = {};
-
-    results.forEach((result, index) => {
-      if (result.ok) return;
-
-      const key = allValidators[index][0];
-
-      // Unfortunately, TypeScript doesn't seem clever enough to detect the
-      // types here correctly, so we're gonna have to go untyped—but that's ok,
-      // because from the outside user’s perspective the types *are* correctly
-      // checked, so this shouldn't cause much trouble.
-      const message = (messages[key] as Record<string, Message<unknown[]>>)[
-        result.name
-      ];
-
-      const value = values[key] ?? "";
-
-      errors[key] =
-        typeof message === "string" ? message : message(value, ...result.args);
+): SchemaParser<Schema> {
+  return async data => {
+    const parserEntries = Object.entries(parsers);
+    const promises = parserEntries.map(([key, parser]) => {
+      const value = data[key] ?? "";
+      return Promise.resolve(parser(value as never)).then(
+        result => [key, value, result] as [string, string, typeof result]
+      );
     });
 
-    return errors;
+    const results = await Promise.all(promises);
+    const errors = results.filter(it => it[2].ok === false) as [
+      string,
+      string,
+      Err<Name, Args>
+    ][];
+    if (errors.length > 0) {
+      const resolvedMessages = errors.map(([key, value, result]) => {
+        const message = (messages[key] as Record<Name, Message<Args>>)[
+          result.name
+        ];
+
+        const finalMessage =
+          typeof message === "string"
+            ? message
+            : message(value, ...result.args);
+
+        return [key, finalMessage];
+      }) as [string, string][];
+
+      const errorsObject = Object.fromEntries(resolvedMessages);
+      throw new ValidationError(errorsObject);
+    }
+
+    const result = results.map(([key, , r]) => [key, (r as Ok<Output>).output]);
+    return Object.fromEntries(result);
   };
 }

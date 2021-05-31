@@ -1,15 +1,28 @@
-import { schema } from "src/schema";
+import { schema, ValidationError } from "src/schema";
 
 describe("schema", () => {
-  it("returns an async validator function", async () => {
-    const validator = schema({}, {});
-    expect(await validator({})).toEqual({});
+  it("returns an async parser function", async () => {
+    const parser = schema({}, {});
+    await expect(parser({})).resolves.toEqual({});
   });
 
-  it("runs validations", async () => {
-    const validator = schema(
+  it("returns the final object if all validations pass", async () => {
+    const parser = schema(
       {
-        foo: () => ({ ok: true }),
+        foo: () => ({ ok: true, output: "hello" })
+      },
+      {
+        foo: {}
+      }
+    );
+
+    await expect(parser({ foo: "a" })).resolves.toEqual({ foo: "hello" });
+  });
+
+  it("runs each parser", async () => {
+    const parser = schema(
+      {
+        foo: () => ({ ok: true, output: "hello" }),
         bar: () => ({ ok: false, name: "dummy", args: [1, 2] }),
         bux: () => ({ ok: false, name: "foobar", args: [] })
       },
@@ -25,21 +38,25 @@ describe("schema", () => {
       }
     );
 
-    expect(await validator({})).toEqual({
-      bar: "Value: ''; Args: 1 2",
-      bux: "Failure!"
-    });
+    await expect(parser({})).rejects.toThrow(
+      new ValidationError({
+        bar: "Value: ''; Args: 1 2",
+        bux: "Failure!"
+      })
+    );
 
-    expect(await validator({ foo: "abc", bar: "bux", unrelated: "?" })).toEqual(
-      {
+    await expect(
+      parser({ foo: "abc", bar: "bux", unrelated: "?" })
+    ).rejects.toThrow(
+      new ValidationError({
         bar: "Value: 'bux'; Args: 1 2",
         bux: "Failure!"
-      }
+      })
     );
   });
 
-  it("accepts async validators", async () => {
-    const validator = schema(
+  it("accepts async parsers", async () => {
+    const parser = schema(
       {
         foo: async () => ({ ok: false, name: "bread", args: ["a", "b"] })
       },
@@ -50,8 +67,10 @@ describe("schema", () => {
       }
     );
 
-    expect(await validator({ foo: "bar" })).toEqual({
-      foo: "Value: bar; Args: a b"
-    });
+    await expect(parser({ foo: "bar" })).rejects.toThrow(
+      new ValidationError({
+        foo: "Value: bar; Args: a b"
+      })
+    );
   });
 });
