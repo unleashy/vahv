@@ -20,7 +20,7 @@ export function ok<T>(output: T): Ok<T> {
 export function err<Name extends string, Args extends unknown[]>(
   name: Name,
   args: Args
-): { ok: false; name: Name; args: Args } {
+): Err<Name, Args> {
   return { ok: false, name, args };
 }
 
