@@ -20,7 +20,7 @@ export function itWorksWithSchema<
     {
       a: {
         [name]: "foobar"
-      }
+      } as { [x in Name]: "foobar" }
     }
   );
 

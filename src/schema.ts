@@ -48,17 +48,15 @@ export function schema<
   Output,
   Name extends string,
   Args extends unknown[],
-  ParserT extends Parser<never, Output, Name, Args>,
+  ParserT extends Parser<string, Output, Name, Args>,
   Schema extends Record<string, ParserT>,
   Msgs extends Messages<Schema>
 >(parsers: Schema, messages: Msgs): SchemaParser<Schema> {
   return async data => {
-    const parserEntries = Object.entries(parsers);
-    const promises = parserEntries.map(([key, parser]) => {
+    const promises = Object.entries(parsers).map(async ([key, parser]) => {
       const value = data[key] ?? "";
-      return Promise.resolve(parser(value as never)).then(
-        result => [key, value, result] as [string, string, typeof result]
-      );
+      const result = await parser(value);
+      return [key, value, result] as [string, string, typeof result];
     });
 
     const results = await Promise.all(promises);
