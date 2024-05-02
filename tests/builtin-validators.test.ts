@@ -47,12 +47,12 @@ describe("maxLength", () => {
 describe("length", () => {
   const parser = length(3, 6);
 
-  it("defines a minimum and maximum length at once", async () => {
-    expect(await parser("abc")).toEqual(ok("abc"));
-    expect(await parser("abcdef")).toEqual(ok("abcdef"));
-    expect(await parser("abcd")).toEqual(ok("abcd"));
-    expect(await parser("a")).toEqual(err("length", [3, 6]));
-    expect(await parser("abcdefgh")).toEqual(err("length", [3, 6]));
+  it("defines a minimum and maximum length at once", () => {
+    expect(parser("abc")).toEqual(ok("abc"));
+    expect(parser("abcdef")).toEqual(ok("abcdef"));
+    expect(parser("abcd")).toEqual(ok("abcd"));
+    expect(parser("a")).toEqual(err("length", [3, 6]));
+    expect(parser("abcdefgh")).toEqual(err("length", [3, 6]));
   });
 
   itWorksWithSchema(parser, "length", "abcd", "a");

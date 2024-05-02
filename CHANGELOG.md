@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Several internal types are now exported
+
+### Removed
+
+- **BREAKING CHANGES:**
+  - Drop support for async validation: `AsyncParser` removed, `SyncParser`
+    renamed to just `Parser`.
+
 ## [0.4.0] - 2024-05-02
 
 ### Changed
@@ -81,7 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Vahv itself! This is its first release.
 
-[unreleased]: https://github.com/unleashy/vahv/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/unleashy/vahv/compare/v0.4.0...HEAD
 [0.4.0]: https://www.npmjs.com/package/vahv/v/0.4.0
 [0.3.2]: https://www.npmjs.com/package/vahv/v/0.3.2
 [0.3.1]: https://www.npmjs.com/package/vahv/v/0.3.1

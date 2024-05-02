@@ -1,13 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  type AsyncParser,
-  type SyncParser,
-  ValidationError,
-  and,
-  err,
-  ok,
-  schema,
-} from "../src";
+import { type Parser, ValidationError, and, err, ok, schema } from "../src";
 
 describe("ok", () => {
   it("returns a successful ParserResult", () => {
@@ -26,26 +18,25 @@ describe("err", () => {
 });
 
 describe("and", () => {
-  const parser1: SyncParser<string, string, "v1", []> = (value) =>
+  const parser1: Parser<string, string, "v1", []> = (value) =>
     value[0] === "a" ? ok(value) : err("v1", []);
 
-  const parser2: AsyncParser<string, string, "v2", [number, number]> = (
-    value,
-  ) => Promise.resolve(value.length === 1 ? ok(value) : err("v2", [1, 2]));
+  const parser2: Parser<string, string, "v2", [number, number]> = (value) =>
+    value.length === 1 ? ok(value) : err("v2", [1, 2]);
 
   const composed = and(parser1, parser2);
 
-  it("composes parsers", async () => {
-    await expect(composed("")).resolves.toEqual(err("v1", []));
-    await expect(composed("ab")).resolves.toEqual(err("v2", [1, 2]));
-    await expect(composed("a")).resolves.toEqual(ok("a"));
+  it("composes parsers", () => {
+    expect(composed("")).toEqual(err("v1", []));
+    expect(composed("ab")).toEqual(err("v2", [1, 2]));
+    expect(composed("a")).toEqual(ok("a"));
   });
 
   it("fails with no arguments", () => {
     expect(() => and()).toThrowError(TypeError);
   });
 
-  it("can be used in a schema", async () => {
+  it("can be used in a schema", () => {
     const theSchema = schema(
       {
         a: composed,
@@ -59,11 +50,11 @@ describe("and", () => {
       },
     );
 
-    await expect(theSchema({ a: "a" })).resolves.toEqual({ a: "a" });
-    await expect(theSchema({ a: "" })).rejects.toThrow(
+    expect(theSchema({ a: "a" })).toEqual({ a: "a" });
+    expect(() => theSchema({ a: "" })).toThrow(
       new ValidationError({ a: "v1" }),
     );
-    await expect(theSchema({ a: "ab" })).rejects.toEqual(
+    expect(() => theSchema({ a: "ab" })).toThrow(
       new ValidationError({
         a: "Value: ab Args: 1 2",
       }),

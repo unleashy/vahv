@@ -24,7 +24,7 @@ export function err<Name extends string, Args extends unknown[]>(
   return { ok: false, name, args };
 }
 
-export interface SyncParser<
+export interface Parser<
   Input,
   Output,
   Name extends string,
@@ -32,19 +32,6 @@ export interface SyncParser<
 > {
   (value: Input): ParserResult<Output, Name, Args>;
 }
-
-export interface AsyncParser<
-  Input,
-  Output,
-  Name extends string,
-  Args extends unknown[],
-> {
-  (value: Input): Promise<ParserResult<Output, Name, Args>>;
-}
-
-export type Parser<I, O, N extends string, A extends unknown[]> =
-  | SyncParser<I, O, N, A>
-  | AsyncParser<I, O, N, A>;
 
 type IsAssignable<A, B> = B extends A ? true : false;
 
@@ -85,7 +72,7 @@ type LastOutput<Ps> = Ps extends [...unknown[], infer L]
 type AndParser<Ps, FirstInput, LastOutput> =
   // prettier-ignore
   Ps extends Parser<never, unknown, infer Name, infer Args>
-    ? AsyncParser<FirstInput, LastOutput, Name, Args>
+    ? Parser<FirstInput, LastOutput, Name, Args>
     : never;
 
 export function and<
@@ -97,10 +84,10 @@ export function and<
     throw new TypeError("At least one validator is required.");
   }
 
-  return (async (value) => {
+  return ((value) => {
     let output = value;
     for (const validator of validators) {
-      const result = await validator(output);
+      const result = validator(output);
       if (result.ok) {
         output = result.output as never;
       } else {

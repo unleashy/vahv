@@ -16,7 +16,7 @@
     "lint": "eslint . && prettier -c src",
     "lint:fix": "eslint . && prettier -w src",
     "build": "pnpm run lint && tsc && unbuild",
-    "test": "vitest"
+    "test": "vitest --typecheck"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",

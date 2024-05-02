@@ -23,7 +23,7 @@ export function itWorksWithSchema<
     },
   );
 
-  it("succeeds within a schema", async () => {
+  it("succeeds within a schema", () => {
     const input =
       typeof successfulValue === "string"
         ? successfulValue
@@ -34,14 +34,14 @@ export function itWorksWithSchema<
         ? successfulValue.output
         : successfulValue;
 
-    await expect(theSchema({ a: input })).resolves.toEqual({
+    expect(theSchema({ a: input })).toEqual({
       a: output,
     });
   });
 
   if (failingValue) {
-    it("fails within a schema", async () => {
-      await expect(theSchema({ a: failingValue })).rejects.toThrow(
+    it("fails within a schema", () => {
+      expect(() => theSchema({ a: failingValue })).toThrow(
         new ValidationError({ a: "foobar" }),
       );
     });

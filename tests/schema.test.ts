@@ -2,12 +2,12 @@ import { describe, it, expect } from "vitest";
 import { ValidationError, schema } from "../src";
 
 describe("schema", () => {
-  it("returns an async parser function", async () => {
+  it("returns a parser function", () => {
     const parser = schema({}, {});
-    await expect(parser({})).resolves.toEqual({});
+    expect(parser({})).toEqual({});
   });
 
-  it("returns the final object if all validations pass", async () => {
+  it("returns the final object if all validations pass", () => {
     const parser = schema(
       {
         foo: () => ({ ok: true, output: "hello" }),
@@ -17,10 +17,10 @@ describe("schema", () => {
       },
     );
 
-    await expect(parser({ foo: "a" })).resolves.toEqual({ foo: "hello" });
+    expect(parser({ foo: "a" })).toEqual({ foo: "hello" });
   });
 
-  it("runs each parser", async () => {
+  it("runs each parser", () => {
     const parser = schema(
       {
         foo: () => ({ ok: true, output: "hello" }),
@@ -39,16 +39,14 @@ describe("schema", () => {
       },
     );
 
-    await expect(parser({})).rejects.toThrow(
+    expect(() => parser({})).toThrow(
       new ValidationError({
         bar: "Value: ''; Args: 1 2",
         bux: "Failure!",
       }),
     );
 
-    await expect(
-      parser({ foo: "abc", bar: "bux", unrelated: "?" }),
-    ).rejects.toThrow(
+    expect(() => parser({ foo: "abc", bar: "bux", unrelated: "?" })).toThrow(
       new ValidationError({
         bar: "Value: 'bux'; Args: 1 2",
         bux: "Failure!",
@@ -56,28 +54,7 @@ describe("schema", () => {
     );
   });
 
-  it("accepts async parsers", async () => {
-    const parser = schema(
-      {
-        foo: () =>
-          Promise.resolve({ ok: false, name: "bread", args: ["a", "b"] }),
-      },
-      {
-        foo: {
-          bread: (value, arg1, arg2) =>
-            `Value: ${value}; Args: ${arg1} ${arg2}`,
-        },
-      },
-    );
-
-    await expect(parser({ foo: "bar" })).rejects.toThrow(
-      new ValidationError({
-        foo: "Value: bar; Args: a b",
-      }),
-    );
-  });
-
-  it("fails if an error message is not present", async () => {
+  it("fails if an error message is not present", () => {
     const parser1 = schema(
       {
         foo: () => ({ ok: false, name: "bar", args: [] }),
@@ -94,10 +71,10 @@ describe("schema", () => {
       },
     );
 
-    await expect(parser1({ foo: "" })).rejects.toThrow(
+    expect(() => parser1({ foo: "" })).toThrow(
       /a message for the "bar" parser in the "foo" key is not present/i,
     );
-    await expect(parser2({ abc: "" })).rejects.toThrow(
+    expect(() => parser2({ abc: "" })).toThrow(
       /a message for the "def" parser in the "abc" key is not present/i,
     );
   });

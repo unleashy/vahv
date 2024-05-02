@@ -1,6 +1,6 @@
 import type { Err, Ok, Parser } from "./parsing";
 
-type Errors = Record<string, string>;
+export type Errors = Record<string, string>;
 
 export class ValidationError extends Error {
   constructor(public readonly errors: Errors) {
@@ -13,12 +13,12 @@ type GenericParser = Parser<never, unknown, string, unknown[]>;
 type OutputOf<P> =
   P extends Parser<never, infer Output, string, unknown[]> ? Output : never;
 
-type SchemaResult<Schema extends Record<string, GenericParser>> = {
+export type SchemaResult<Schema extends Record<string, GenericParser>> = {
   [K in keyof Schema]: OutputOf<Schema[K]>;
 };
 
-interface SchemaParser<Schema extends Record<string, GenericParser>> {
-  (data: Record<string, string | undefined>): Promise<SchemaResult<Schema>>;
+export interface SchemaParser<Schema extends Record<string, GenericParser>> {
+  (data: Record<string, string | undefined>): SchemaResult<Schema>;
 }
 
 export type Infer<S> =
@@ -31,11 +31,11 @@ type ParserArgsByName<P, Name extends string> =
   // prettier-ignore
   P extends Parser<never, unknown, Name, infer Args> ? Args : never;
 
-type Message<Args extends unknown[]> =
+export type Message<Args extends unknown[]> =
   | string
   | ((value: string, ...args: Args) => string);
 
-type Messages<Schema> = {
+export type Messages<Schema> = {
   [K in keyof Schema]?: {
     [N in ParserName<Schema[K]>]?: Message<ParserArgsByName<Schema[K], N>>;
   };
@@ -49,14 +49,13 @@ export function schema<
   Schema extends Record<string, ParserT>,
   Msgs extends Messages<Schema>,
 >(parsers: Schema, messages: Msgs): SchemaParser<Schema> {
-  return async (data) => {
-    const promises = Object.entries(parsers).map(async ([key, parser]) => {
+  return (data) => {
+    const results = Object.entries(parsers).map(([key, parser]) => {
       const value = data[key] ?? "";
-      const result = await parser(value);
-      return [key, value, result] as [string, string, typeof result];
+      const result = parser(value);
+      return [key, value, result] as const;
     });
 
-    const results = await Promise.all(promises);
     const errors = results.filter((it) => !it[2].ok) as Array<
       [string, string, Err<Name, Args>]
     >;

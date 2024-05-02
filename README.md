@@ -48,43 +48,43 @@ const formSchema = schema(
 ```
 
 You can then call the schema with an object to validate and transform it. It
-returns a `Promise` that either resolves with the same object you passed in
-plus transformations, or rejects with a `ValidationError` with the errors as
-per the second argument of `schema`:
+either returns with the same object you passed in plus transformations, or
+throws with a `ValidationError` with errors as per the second argument of
+`schema`:
 
 ```ts
-await formSchema({});
-// => rejects: ValidationError {
+formSchema({});
+// => throws: ValidationError {
 //      username: "Enter an username",
 //      email: "Enter an email address, like name@example.com",
 //      password: "Enter a password"
 //    }
 
-await formSchema({
+formSchema({
   username: "ab",
   email: "name@example.com",
   password: "short",
 });
-// => rejects: ValidationError {
+// => throws: ValidationError {
 //      username: "Username must be between 3 and 32 characters",
 //      password: "Password must have at least 8 characters"
 //    }
 
-await formSchema({
+formSchema({
   username: "spa ces",
   email: "name@example.com",
   password: "longenoughsurely",
 });
-// => rejects: ValidationError {
+// => throws: ValidationError {
 //      username: "Username must be in the correct format"
 //    }
 
-await formSchema({
+formSchema({
   username: "   niceperson123  ",
   email: "name@example.com",
   password: "  agoodpassword  ",
 });
-// => resolves: {
+// => returns: {
 //      username: "niceperson123",
 //      email: "name@example.com",
 //      password: "  agoodpassword  "
@@ -96,9 +96,6 @@ input string. The result of a parser is a `ParserResult`, that can be either a
 success with the transformed value through the `ok` function or a failure
 through the `err` function. Many parsers—like Vahv’s built-in `length` parser—
 take arguments; they just return a fresh parser bound to those arguments.
-
-Parsers can also be async—any parser that returns a Promise that wraps a
-`ParserResult` is an async parser.
 
 ### Composing
 
@@ -120,10 +117,9 @@ export const username = and(length(3, 32), matches(/^[A-Z0-9_-]$/i));
 // ... wherever else ...
 import { username } from 'custom-parsers.ts';
 
-...
 
 schema({
- username: username
+ username: username,
  ...
 }, { ... });
 ```
@@ -154,8 +150,6 @@ export default {
 
 // ... wherever else ...
 import defaultMessages from 'validation-messages.ts';
-
-...
 
 schema({ ... }, defaultMessages);
 ```
