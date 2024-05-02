@@ -193,10 +193,12 @@ prettify and lint the codebase.
 ### Releasing
 
 1. Edit CHANGELOG.md to document each change appropriately
-2. Commit with message "vx.y.z"
-3. `pnpm publish`
-4. Push commits: `git push`
-5. Push tag: `git push origin <vx.y.z>`
+2. Bump version in package.json
+3. Commit with message "vx.y.z"
+4. `pnpm publish`
+5. Push commits: `git push`
+6. Push tag: `git push origin <vx.y.z>`
+7. Create release on Github
 
 ## License
 
