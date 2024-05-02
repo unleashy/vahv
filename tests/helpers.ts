@@ -1,5 +1,5 @@
 import { it, expect } from "vitest";
-import { type Parser, ValidationError, schema } from "../src";
+import { type Parser, schema } from "../src";
 
 export function itWorksWithSchema<
   Output,
@@ -35,15 +35,19 @@ export function itWorksWithSchema<
         : successfulValue;
 
     expect(theSchema({ a: input })).toEqual({
-      a: output,
+      ok: true,
+      output: {
+        a: output,
+      },
     });
   });
 
   if (failingValue) {
     it("fails within a schema", () => {
-      expect(() => theSchema({ a: failingValue })).toThrow(
-        new ValidationError({ a: "foobar" }),
-      );
+      expect(theSchema({ a: failingValue })).toEqual({
+        ok: false,
+        error: { a: "foobar" },
+      });
     });
   }
 }

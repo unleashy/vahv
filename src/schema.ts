@@ -1,12 +1,6 @@
-import type { Err, Ok, Parser } from "./parsing";
+import type { Err, Ok, Parser, ParserResult, ParserError } from "./parsing";
 
 export type Errors = Record<string, string>;
-
-export class ValidationError extends Error {
-  constructor(public readonly errors: Errors) {
-    super();
-  }
-}
 
 type GenericParser = Parser<never, unknown, string, unknown[]>;
 
@@ -18,7 +12,9 @@ export type SchemaResult<Schema extends Record<string, GenericParser>> = {
 };
 
 export interface SchemaParser<Schema extends Record<string, GenericParser>> {
-  (data: Record<string, string | undefined>): SchemaResult<Schema>;
+  (
+    data: Record<string, string | undefined>,
+  ): ParserResult<SchemaResult<Schema>, Errors>;
 }
 
 export type Infer<S> =
@@ -57,33 +53,36 @@ export function schema<
     });
 
     const errors = results.filter((it) => !it[2].ok) as Array<
-      [string, string, Err<Name, Args>]
+      [string, string, Err<ParserError<Name, Args>>]
     >;
     if (errors.length > 0) {
       const resolvedMessages = errors.map(([key, value, result]) => {
         const message = (
           messages[key] as Record<Name, Message<Args>> | undefined
-        )?.[result.name];
+        )?.[result.error.name];
 
         if (message === undefined) {
           throw new TypeError(
-            `a message for the "${result.name}" parser in the "${key}" key is not present`,
+            `a message for the "${result.error.name}" parser in the "${key}" key is not present`,
           );
         }
 
         const finalMessage =
           typeof message === "string"
             ? message
-            : message(value, ...result.args);
+            : message(value, ...result.error.args);
 
         return [key, finalMessage] as const;
       });
 
       const errorsObject = Object.fromEntries(resolvedMessages);
-      throw new ValidationError(errorsObject);
+      return { ok: false, error: errorsObject };
     }
 
     const result = results.map(([key, , r]) => [key, (r as Ok<Output>).output]);
-    return Object.fromEntries(result) as SchemaResult<Schema>;
+    return {
+      ok: true,
+      output: Object.fromEntries(result) as SchemaResult<Schema>,
+    };
   };
 }

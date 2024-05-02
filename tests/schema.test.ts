@@ -1,31 +1,34 @@
 import { describe, it, expect } from "vitest";
-import { ValidationError, schema } from "../src";
+import { schema, ok, err } from "../src";
 
 describe("schema", () => {
   it("returns a parser function", () => {
     const parser = schema({}, {});
-    expect(parser({})).toEqual({});
+    expect(parser({})).toEqual({ ok: true, output: {} });
   });
 
   it("returns the final object if all validations pass", () => {
     const parser = schema(
       {
-        foo: () => ({ ok: true, output: "hello" }),
+        foo: () => ok("hello"),
       },
       {
         foo: {},
       },
     );
 
-    expect(parser({ foo: "a" })).toEqual({ foo: "hello" });
+    expect(parser({ foo: "a" })).toEqual({
+      ok: true,
+      output: { foo: "hello" },
+    });
   });
 
   it("runs each parser", () => {
     const parser = schema(
       {
-        foo: () => ({ ok: true, output: "hello" }),
-        bar: () => ({ ok: false, name: "dummy", args: [1, 2] }),
-        bux: () => ({ ok: false, name: "foobar", args: [] }),
+        foo: () => ok("hello"),
+        bar: () => err("dummy", [1, 2]),
+        bux: () => err("foobar", []),
       },
       {
         foo: {},
@@ -39,32 +42,34 @@ describe("schema", () => {
       },
     );
 
-    expect(() => parser({})).toThrow(
-      new ValidationError({
+    expect(parser({})).toEqual({
+      ok: false,
+      error: {
         bar: "Value: ''; Args: 1 2",
         bux: "Failure!",
-      }),
-    );
+      },
+    });
 
-    expect(() => parser({ foo: "abc", bar: "bux", unrelated: "?" })).toThrow(
-      new ValidationError({
+    expect(parser({ foo: "abc", bar: "bux", unrelated: "?" })).toEqual({
+      ok: false,
+      error: {
         bar: "Value: 'bux'; Args: 1 2",
         bux: "Failure!",
-      }),
-    );
+      },
+    });
   });
 
   it("fails if an error message is not present", () => {
     const parser1 = schema(
       {
-        foo: () => ({ ok: false, name: "bar", args: [] }),
+        foo: () => err("bar", []),
       },
       {},
     );
 
     const parser2 = schema(
       {
-        abc: () => ({ ok: false, name: "def", args: [] }),
+        abc: () => err("def", []),
       },
       {
         abc: {},

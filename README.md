@@ -48,16 +48,20 @@ const formSchema = schema(
 ```
 
 You can then call the schema with an object to validate and transform it. It
-either returns with the same object you passed in plus transformations, or
-throws with a `ValidationError` with errors as per the second argument of
-`schema`:
+returns a `ParserResult` object representing if validation was successful or not.
+If the `ok` property is true, the `output` property will have the same object
+you passed in plus transformations. Otherwise, the `error` property will have
+an object with errors as per the second argument of `schema`:
 
 ```ts
 formSchema({});
-// => throws: ValidationError {
-//      username: "Enter an username",
-//      email: "Enter an email address, like name@example.com",
-//      password: "Enter a password"
+// => returns: ParserResult {
+//      ok: false,
+//      error: {
+//        username: "Enter an username",
+//        email: "Enter an email address, like name@example.com",
+//        password: "Enter a password"
+//      }
 //    }
 
 formSchema({
@@ -65,9 +69,12 @@ formSchema({
   email: "name@example.com",
   password: "short",
 });
-// => throws: ValidationError {
-//      username: "Username must be between 3 and 32 characters",
-//      password: "Password must have at least 8 characters"
+// => returns: ParserResult {
+//      ok: false,
+//      error: {
+//        username: "Username must be between 3 and 32 characters",
+//        password: "Password must have at least 8 characters"
+//      }
 //    }
 
 formSchema({
@@ -75,8 +82,11 @@ formSchema({
   email: "name@example.com",
   password: "longenoughsurely",
 });
-// => throws: ValidationError {
-//      username: "Username must be in the correct format"
+// => returns: ParserResult {
+//      ok: false,
+//      error: {
+//        username: "Username must be in the correct format"
+//      }
 //    }
 
 formSchema({
@@ -84,10 +94,13 @@ formSchema({
   email: "name@example.com",
   password: "  agoodpassword  ",
 });
-// => returns: {
-//      username: "niceperson123",
-//      email: "name@example.com",
-//      password: "  agoodpassword  "
+// => returns: ParserResult {
+//      ok: true,
+//      output: {
+//        username: "niceperson123",
+//        email: "name@example.com",
+//        password: "  agoodpassword  "
+//      }
 //    }
 ```
 

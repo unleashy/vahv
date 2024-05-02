@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { type Parser, ValidationError, and, err, ok, schema } from "../src";
+import { type Parser, and, err, ok, schema } from "../src";
 
 describe("ok", () => {
   it("returns a successful ParserResult", () => {
@@ -11,8 +11,10 @@ describe("err", () => {
   it("returns a failed ParserResult", () => {
     expect(err("abc", [1, 2, 3])).toEqual({
       ok: false,
-      name: "abc",
-      args: [1, 2, 3],
+      error: {
+        name: "abc",
+        args: [1, 2, 3],
+      },
     });
   });
 });
@@ -50,14 +52,13 @@ describe("and", () => {
       },
     );
 
-    expect(theSchema({ a: "a" })).toEqual({ a: "a" });
-    expect(() => theSchema({ a: "" })).toThrow(
-      new ValidationError({ a: "v1" }),
-    );
-    expect(() => theSchema({ a: "ab" })).toThrow(
-      new ValidationError({
+    expect(theSchema({ a: "a" })).toEqual({ ok: true, output: { a: "a" } });
+    expect(theSchema({ a: "" })).toEqual({ ok: false, error: { a: "v1" } });
+    expect(theSchema({ a: "ab" })).toEqual({
+      ok: false,
+      error: {
         a: "Value: ab Args: 1 2",
-      }),
-    );
+      },
+    });
   });
 });

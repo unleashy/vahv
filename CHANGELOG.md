@@ -10,12 +10,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Several internal types are now exported
+- `ParserError` to represent errors from the `err` function
+
+### Changed
+
+- **BREAKING CHANGES:**
+  - `ParserResult` errors changed; now they take a generic `E` type to define
+    their `error` property. No code changes are needed if your custom parsers
+    only use the `err` function.
+  - Instead of throwing on failure, `schema` now returns a `ParserResult`
+    object. See [README.md](README.md) for details.
 
 ### Removed
 
 - **BREAKING CHANGES:**
   - Drop support for async validation: `AsyncParser` removed, `SyncParser`
     renamed to just `Parser`.
+  - `ValidationError` removed.
 
 ## [0.4.0] - 2024-05-02
 

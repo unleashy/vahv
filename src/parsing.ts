@@ -3,15 +3,17 @@ export interface Ok<T> {
   output: T;
 }
 
-export interface Err<Name extends string, Args extends unknown[]> {
+export interface Err<E> {
   ok: false;
+  error: E;
+}
+
+export type ParserResult<T, E> = Ok<T> | Err<E>;
+
+export interface ParserError<Name extends string, Args extends unknown[]> {
   name: Name;
   args: Args;
 }
-
-export type ParserResult<T, Name extends string, Args extends unknown[]> =
-  | Ok<T>
-  | Err<Name, Args>;
 
 export function ok<T>(output: T): Ok<T> {
   return { ok: true, output };
@@ -20,8 +22,8 @@ export function ok<T>(output: T): Ok<T> {
 export function err<Name extends string, Args extends unknown[]>(
   name: Name,
   args: Args,
-): Err<Name, Args> {
-  return { ok: false, name, args };
+): Err<ParserError<Name, Args>> {
+  return { ok: false, error: { name, args } };
 }
 
 export interface Parser<
@@ -30,7 +32,7 @@ export interface Parser<
   Name extends string,
   Args extends unknown[],
 > {
-  (value: Input): ParserResult<Output, Name, Args>;
+  (value: Input): ParserResult<Output, ParserError<Name, Args>>;
 }
 
 type IsAssignable<A, B> = B extends A ? true : false;
