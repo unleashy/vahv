@@ -1,6 +1,6 @@
+import { describe, it, expect } from "vitest";
 import { itWorksWithSchema } from "./helpers";
-import { ok } from "../src/parsing";
-import { defaultTo, trim } from "../src/builtin-transformers";
+import { ok, defaultTo, trim } from "../src";
 
 describe("defaultTo", () => {
   const parser = defaultTo(() => 123);

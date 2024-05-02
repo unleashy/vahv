@@ -10,9 +10,8 @@ export class ValidationError extends Error {
 
 type GenericParser = Parser<never, unknown, string, unknown[]>;
 
-type OutputOf<P> = P extends Parser<never, infer Output, string, unknown[]>
-  ? Output
-  : never;
+type OutputOf<P> =
+  P extends Parser<never, infer Output, string, unknown[]> ? Output : never;
 
 type SchemaResult<Schema extends Record<string, GenericParser>> = {
   [K in keyof Schema]: OutputOf<Schema[K]>;
@@ -22,13 +21,11 @@ interface SchemaParser<Schema extends Record<string, GenericParser>> {
   (data: Record<string, string | undefined>): Promise<SchemaResult<Schema>>;
 }
 
-export type Infer<S> = S extends SchemaParser<infer Schema>
-  ? SchemaResult<Schema>
-  : never;
+export type Infer<S> =
+  S extends SchemaParser<infer Schema> ? SchemaResult<Schema> : never;
 
-type ParserName<T> = T extends Parser<never, unknown, infer Name, unknown[]>
-  ? Name
-  : never;
+type ParserName<T> =
+  T extends Parser<never, unknown, infer Name, unknown[]> ? Name : never;
 
 type ParserArgsByName<P, Name extends string> =
   // prettier-ignore
@@ -50,9 +47,9 @@ export function schema<
   Args extends unknown[],
   ParserT extends Parser<string, Output, Name, Args>,
   Schema extends Record<string, ParserT>,
-  Msgs extends Messages<Schema>
+  Msgs extends Messages<Schema>,
 >(parsers: Schema, messages: Msgs): SchemaParser<Schema> {
-  return async data => {
+  return async (data) => {
     const promises = Object.entries(parsers).map(async ([key, parser]) => {
       const value = data[key] ?? "";
       const result = await parser(value);
@@ -60,11 +57,9 @@ export function schema<
     });
 
     const results = await Promise.all(promises);
-    const errors = results.filter(it => it[2].ok === false) as [
-      string,
-      string,
-      Err<Name, Args>
-    ][];
+    const errors = results.filter((it) => !it[2].ok) as Array<
+      [string, string, Err<Name, Args>]
+    >;
     if (errors.length > 0) {
       const resolvedMessages = errors.map(([key, value, result]) => {
         const message = (
@@ -73,7 +68,7 @@ export function schema<
 
         if (message === undefined) {
           throw new TypeError(
-            `a message for the "${result.name}" parser in the "${key}" key is not present`
+            `a message for the "${result.name}" parser in the "${key}" key is not present`,
           );
         }
 
@@ -82,14 +77,14 @@ export function schema<
             ? message
             : message(value, ...result.args);
 
-        return [key, finalMessage];
-      }) as [string, string][];
+        return [key, finalMessage] as const;
+      });
 
       const errorsObject = Object.fromEntries(resolvedMessages);
       throw new ValidationError(errorsObject);
     }
 
     const result = results.map(([key, , r]) => [key, (r as Ok<Output>).output]);
-    return Object.fromEntries(result);
+    return Object.fromEntries(result) as SchemaResult<Schema>;
   };
 }

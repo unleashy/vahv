@@ -1,6 +1,3 @@
 {
-  "arrowParens": "avoid",
-  "endOfLine": "lf",
-  "semi": true,
-  "trailingComma": "none"
+  "endOfLine": "lf"
 }

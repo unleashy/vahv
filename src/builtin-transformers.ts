@@ -1,10 +1,10 @@
-import { ok, Parser } from "./parsing";
+import { type Parser, ok } from "./parsing";
 
 export function defaultTo<T>(
-  defaultValue: () => T
+  defaultValue: () => T,
 ): Parser<string, string | T, "defaultTo", [() => T]> {
-  return value => ok(value.length === 0 ? defaultValue() : value);
+  return (value) => ok(value.length === 0 ? defaultValue() : value);
 }
 
-export const trim: Parser<string, string, "trim", []> = value =>
+export const trim: Parser<string, string, "trim", []> = (value) =>
   ok(value.trim());

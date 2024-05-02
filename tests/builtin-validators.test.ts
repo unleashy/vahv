@@ -1,13 +1,15 @@
+import { describe, it, expect } from "vitest";
 import { itWorksWithSchema } from "./helpers";
-import { err, ok } from "../src/parsing";
 import {
+  err,
+  ok,
   email,
   length,
   matches,
   maxLength,
   minLength,
-  required
-} from "../src/builtin-validators";
+  required,
+} from "../src";
 
 describe("required", () => {
   it("passes for non-empty strings", () => {
@@ -62,7 +64,7 @@ describe("matches", () => {
   it("defines a matching regex for the value", () => {
     expect(parser("bread")).toEqual(ok("bread"));
     expect(parser("waffles pancakes bread eggs")).toEqual(
-      ok("waffles pancakes bread eggs")
+      ok("waffles pancakes bread eggs"),
     );
     expect(parser("bre")).toEqual(err("matches", [/bread/]));
   });

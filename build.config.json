@@ -1,0 +1,7 @@
+{
+  "rollup": {
+    "esbuild": {
+      "target": "node20"
+    }
+  }
+}

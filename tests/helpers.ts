@@ -1,27 +1,26 @@
-import { Parser } from "../src/parsing";
-import { schema, ValidationError } from "../src/schema";
+import { it, expect } from "vitest";
+import { type Parser, ValidationError, schema } from "../src";
 
-// eslint-disable-next-line jest/no-export
 export function itWorksWithSchema<
   Output,
   SuccessOutput extends Output,
   Name extends string,
-  P extends Parser<string, Output, Name, unknown[]>
+  P extends Parser<string, Output, Name, unknown[]>,
 >(
   parser: P,
   name: Name,
   successfulValue: string | { input: string; output: SuccessOutput },
-  failingValue?: string
+  failingValue?: string,
 ): void {
   const theSchema = schema(
     {
-      a: parser
+      a: parser,
     },
     {
       a: {
-        [name]: "foobar"
-      } as { [x in Name]: "foobar" }
-    }
+        [name]: "foobar",
+      } as { [x in Name]: "foobar" },
+    },
   );
 
   it("succeeds within a schema", async () => {
@@ -36,14 +35,14 @@ export function itWorksWithSchema<
         : successfulValue;
 
     await expect(theSchema({ a: input })).resolves.toEqual({
-      a: output
+      a: output,
     });
   });
 
   if (failingValue) {
     it("fails within a schema", async () => {
       await expect(theSchema({ a: failingValue })).rejects.toThrow(
-        new ValidationError({ a: "foobar" })
+        new ValidationError({ a: "foobar" }),
       );
     });
   }

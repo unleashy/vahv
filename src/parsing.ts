@@ -19,7 +19,7 @@ export function ok<T>(output: T): Ok<T> {
 
 export function err<Name extends string, Args extends unknown[]>(
   name: Name,
-  args: Args
+  args: Args,
 ): Err<Name, Args> {
   return { ok: false, name, args };
 }
@@ -28,7 +28,7 @@ export interface SyncParser<
   Input,
   Output,
   Name extends string,
-  Args extends unknown[]
+  Args extends unknown[],
 > {
   (value: Input): ParserResult<Output, Name, Args>;
 }
@@ -37,7 +37,7 @@ export interface AsyncParser<
   Input,
   Output,
   Name extends string,
-  Args extends unknown[]
+  Args extends unknown[],
 > {
   (value: Input): Promise<ParserResult<Output, Name, Args>>;
 }
@@ -52,8 +52,8 @@ type IsCompatible<P1, P2> =
   // prettier-ignore
   P1 extends Parser<never, infer O, string, unknown[]>
     ? P2 extends Parser<infer I, unknown, string, unknown[]>
-    ? IsAssignable<I, O>
-    : false
+      ? IsAssignable<I, O>
+      : false
     : false;
 
 type CheckCompatibility<Ps extends unknown[]> =
@@ -61,8 +61,8 @@ type CheckCompatibility<Ps extends unknown[]> =
   Ps extends [infer P1, infer P2, ...infer Rest]
     ? [IsCompatible<P1, P2>, ...CheckCompatibility<[P2, ...Rest]>]
     : Ps["length"] extends 1
-    ? [true]
-    : [];
+      ? [true]
+      : [];
 
 type AreAllTrue<T extends unknown[]> = T[number] extends true ? true : false;
 
@@ -89,7 +89,7 @@ type AndParser<Ps, FirstInput, LastOutput> =
     : never;
 
 export function and<
-  Parsers extends Parser<never, unknown, string, unknown[]>[]
+  Parsers extends Array<Parser<never, unknown, string, unknown[]>>,
 >(
   ...validators: CheckParsers<Parsers>
 ): AndParser<Parsers[number], FirstInput<Parsers>, LastOutput<Parsers>> {
@@ -97,7 +97,7 @@ export function and<
     throw new TypeError("At least one validator is required.");
   }
 
-  return (async value => {
+  return (async (value) => {
     let output = value;
     for (const validator of validators) {
       const result = await validator(output);

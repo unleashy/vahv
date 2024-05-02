@@ -16,7 +16,7 @@ import {
   matches,
   trim,
   email,
-  minLength
+  minLength,
 } from "vahv";
 
 const formSchema = schema(
@@ -24,7 +24,7 @@ const formSchema = schema(
   {
     username: and(required, length(3, 32), matches(/^[A-Z0-9_-]+$/i), trim),
     email: and(required, email),
-    password: and(required, minLength(8))
+    password: and(required, minLength(8)),
   },
   // Error messages
   {
@@ -32,18 +32,18 @@ const formSchema = schema(
       required: "Enter an username",
       length: (_, min, max) =>
         `Username must be between ${min} and ${max} characters`,
-      matches: "Username must be in the correct format"
+      matches: "Username must be in the correct format",
     },
     email: {
       required: "Enter an email address, like name@example.com",
-      email: "Enter an email address, like name@example.com"
+      email: "Enter an email address, like name@example.com",
     },
     password: {
       required: "Enter a password",
       minLength: (_, length) =>
-        `Password must have at least ${length} characters`
-    }
-  }
+        `Password must have at least ${length} characters`,
+    },
+  },
 );
 ```
 
@@ -63,7 +63,7 @@ await formSchema({});
 await formSchema({
   username: "ab",
   email: "name@example.com",
-  password: "short"
+  password: "short",
 });
 // => rejects: ValidationError {
 //      username: "Username must be between 3 and 32 characters",
@@ -73,7 +73,7 @@ await formSchema({
 await formSchema({
   username: "spa ces",
   email: "name@example.com",
-  password: "longenoughsurely"
+  password: "longenoughsurely",
 });
 // => rejects: ValidationError {
 //      username: "Username must be in the correct format"
@@ -82,7 +82,7 @@ await formSchema({
 await formSchema({
   username: "   niceperson123  ",
   email: "name@example.com",
-  password: "  agoodpassword  "
+  password: "  agoodpassword  ",
 });
 // => resolves: {
 //      username: "niceperson123",
@@ -179,14 +179,15 @@ TODO
 
 ## Development
 
-Vahv uses Yarn for development. Use `yarn install` to install all dependencies,
-`yarn test` to run all tests, and `yarn lint` to prettify and lint the codebase.
+Vahv uses [pnpm](https://pnpm.io/) for development. Use `pnpm install` to
+install all dependencies, `pnpm run test` to run all tests, and `pnpm lint` to
+prettify and lint the codebase.
 
 ### Releasing
 
 1. Edit CHANGELOG.md to document each change appropriately
-2. Commit with message "Release vx.y.z"
-3. `yarn publish`
+2. Commit with message "vx.y.z"
+3. `pnpm publish`
 4. Push commits: `git push`
 5. Push tag: `git push origin <vx.y.z>`
 

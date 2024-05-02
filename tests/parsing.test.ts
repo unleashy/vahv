@@ -1,5 +1,13 @@
-import { and, AsyncParser, err, ok, SyncParser } from "src/parsing";
-import { schema, ValidationError } from "src/schema";
+import { describe, it, expect } from "vitest";
+import {
+  type AsyncParser,
+  type SyncParser,
+  ValidationError,
+  and,
+  err,
+  ok,
+  schema,
+} from "../src";
 
 describe("ok", () => {
   it("returns a successful ParserResult", () => {
@@ -12,17 +20,18 @@ describe("err", () => {
     expect(err("abc", [1, 2, 3])).toEqual({
       ok: false,
       name: "abc",
-      args: [1, 2, 3]
+      args: [1, 2, 3],
     });
   });
 });
 
 describe("and", () => {
-  const parser1: SyncParser<string, string, "v1", []> = value =>
+  const parser1: SyncParser<string, string, "v1", []> = (value) =>
     value[0] === "a" ? ok(value) : err("v1", []);
 
-  const parser2: AsyncParser<string, string, "v2", [number, number]> =
-    async value => (value.length === 1 ? ok(value) : err("v2", [1, 2]));
+  const parser2: AsyncParser<string, string, "v2", [number, number]> = (
+    value,
+  ) => Promise.resolve(value.length === 1 ? ok(value) : err("v2", [1, 2]));
 
   const composed = and(parser1, parser2);
 
@@ -39,25 +48,25 @@ describe("and", () => {
   it("can be used in a schema", async () => {
     const theSchema = schema(
       {
-        a: composed
+        a: composed,
       },
       {
         a: {
           v1: "v1",
           v2: (value: string, ...args: number[]) =>
-            `Value: ${value} Args: ${args.join(" ")}`
-        }
-      }
+            `Value: ${value} Args: ${args.join(" ")}`,
+        },
+      },
     );
 
     await expect(theSchema({ a: "a" })).resolves.toEqual({ a: "a" });
     await expect(theSchema({ a: "" })).rejects.toThrow(
-      new ValidationError({ a: "v1" })
+      new ValidationError({ a: "v1" }),
     );
     await expect(theSchema({ a: "ab" })).rejects.toEqual(
       new ValidationError({
-        a: "Value: ab Args: 1 2"
-      })
+        a: "Value: ab Args: 1 2",
+      }),
     );
   });
 });

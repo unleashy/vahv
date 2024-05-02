@@ -1,36 +1,39 @@
 {
   "name": "vahv",
   "version": "0.3.2",
+  "author": "Emmanuelle Fernandes",
   "description": "Composable form validation library for TypeScript",
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/esm/index.js",
-  "sideEffects": false,
+  "license": "MIT",
+  "repository": "github:unleashy/vahv",
+  "homepage": "https://github.com/unleashy/vahv",
+  "type": "module",
+  "exports": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "files": [
-    "./dist"
+    "dist"
   ],
   "scripts": {
-    "build": "tsc -b src && tsc -b src/tsconfig-cjs.json",
-    "test": "jest",
-    "lint": "prettier --write . && eslint --ext .js,.ts src/ tests/",
-    "prepublishOnly": "yarn lint && yarn build"
+    "lint": "eslint . && prettier -c src",
+    "lint:fix": "eslint . && prettier -w src",
+    "build": "pnpm run lint && tsc && unbuild",
+    "test": "vitest"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.23",
-    "@typescript-eslint/eslint-plugin": "^4.25.0",
-    "@typescript-eslint/parser": "^4.25.0",
-    "eslint": "^7.27.0",
-    "eslint-config-prettier": "^6.15.0",
-    "eslint-plugin-jest": "^24.3.6",
-    "jest": "^26.6.3",
-    "prettier": "^2.3.0",
-    "ts-jest": "^26.5.6",
-    "typescript": "^4.3.2"
+    "@eslint/js": "^9.1.1",
+    "@types/node": "^20",
+    "eslint": "^8",
+    "eslint-config-prettier": "^9",
+    "eslint-plugin-n": "^17",
+    "eslint-plugin-unicorn": "^52",
+    "globals": "^15.1.0",
+    "prettier": "^3",
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^7.8.0",
+    "unbuild": "^2",
+    "vitest": "^1"
   },
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/unleashy/vahv.git"
+  "engines": {
+    "node": ">=20"
   },
-  "author": "Emmanuelle Fernandes",
-  "homepage": "https://github.com/unleashy/vahv"
+  "sideEffects": false
 }
