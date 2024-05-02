@@ -51,4 +51,7 @@ export default ts.config(
     files: ["**/*.js", "**/*.cjs", "**/*.mjs"],
     ...ts.configs.disableTypeChecked,
   },
+  {
+    ignores: ["node_modules/", "dist/", "coverage/"],
+  },
 );
